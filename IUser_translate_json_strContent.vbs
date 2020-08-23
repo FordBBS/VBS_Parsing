@@ -10,6 +10,7 @@ Function IUser_translate_json_strContent(ByVal strContent)
 	' 		 (("gmd.devicename"), ("%tag%0%tag%SULEV%;%%tag%1%tag%CONT_BAG"))
 	'
 	'***********************************************************************************************
+	
 	On Error Resume Next
 	IUser_translate_json_strContent = Array(Array(), Array())
 
