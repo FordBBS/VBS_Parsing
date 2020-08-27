@@ -2,6 +2,7 @@ Function IBase_create_resParamValue(ByVal strValue)
 	'*** History ***********************************************************************************
 	' 2020/08/26, BBS:	- First Release
 	' 2020/08/27, BBS:	- bug fixed when 'strValue' has only one level
+	'					- bug fixed, invalid If-Else condition for creating result for new branch
 	'
 	'***********************************************************************************************
 
@@ -77,7 +78,7 @@ Function IBase_create_resParamValue(ByVal strValue)
 			Erase arrBase
 			Redim Preserve arrBase(0)
 
-			If CInt(arrTagIdx(UBound(arrTagIdx))) < 1 Then
+			If UBound(arrTagIdx) < 1 Then
 				arrThis = thisValue
 			Else
 				For cnt2 = 0 to (CInt(arrTagIdx(UBound(arrTagIdx))) - 1)
