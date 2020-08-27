@@ -1,6 +1,9 @@
 Function IUser_translate_json_strContent(ByVal strContent)
 	'*** History ***********************************************************************************
 	' 2020/08/23, BBS:	- First Release
+	' 2020/08/27, BBS:	- Bug fixed
+	' 					1) Array tag is not removed when it's only one tag left
+	'					2) Parameter path ends with "." for any value that has array value line
 	'
 	'***********************************************************************************************
 	
@@ -35,6 +38,7 @@ Function IUser_translate_json_strContent(ByVal strContent)
 	strBrnIdx   = "" 				' Storage: Branch, Position index
 	
 	'*** Operations ********************************************************************************
+	'--- Parsing -----------------------------------------------------------------------------------
 	while cnt_row < UBound(arrContent)
 		arrThisInfo = IBase_get_value_from_strLine(arrContent(cnt_row), ":")
 		thisParam   = arrThisInfo(0)
@@ -91,13 +95,18 @@ Function IUser_translate_json_strContent(ByVal strContent)
 			ElseIf InStr(arrContent(cnt_row), "]") > 0 Then
 				If InStrRev(strTagArray, ";") > 0 Then
 					strTagArray = Mid(strTagArray, 1, InStrRev(strTagArray, ";") - 1)
+				Else
+					strTagArray = ""
 				End If
 
 				If InStrRev(strBrnTag, ";") > 0 Then
 					strBrnTag = Mid(strBrnTag, 1, InStrRev(strBrnTag, ";") - 1)
 					strBrnIdx = Mid(strBrnIdx, 1, InStrRev(strBrnIdx, ";") - 1)
+				Else
+					strBrnTag = ""
+					strBrnIdx = ""
 				End If
-			
+
 			' Case: Value line (e.g. Parameter that has array value will break its value into lines)
 			ElseIf InStr(arrContent(cnt_row), "{") = 0 and InStr(arrContent(cnt_row), "[") = 0 Then
 				flg_append  = True
@@ -106,7 +115,9 @@ Function IUser_translate_json_strContent(ByVal strContent)
 
 		' Appending
 		If flg_append Then
-			If curRoot <> "" Then
+			If thisParam = "" Then
+				curPath = curRoot
+			ElseIf curRoot <> "" Then
 				curPath = Join(Array(curRoot, thisParam), ".")
 			Else
 				curPath = thisParam
@@ -171,6 +182,15 @@ Function IUser_translate_json_strContent(ByVal strContent)
 		End If
 	wend
 	
+	'--- Translate 'arrValue' ----------------------------------------------------------------------
+	For cnt1 = 0 to UBound(arrValue)
+		If InStr(arrValue(cnt1), "%tag%") > 0 Then
+			existValue 	   = IUser_translate_resParamValue(arrValue(cnt1), "")
+			arrValue(cnt1) = existValue
+		End If
+	Next 
+
+	'--- Release -----------------------------------------------------------------------------------
 	IUser_translate_json_strContent = Array(arrParam, arrValue)
 
 	'*** Error handler *****************************************************************************
