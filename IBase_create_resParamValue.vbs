@@ -1,6 +1,7 @@
 Function IBase_create_resParamValue(ByVal strValue)
 	'*** History ***********************************************************************************
 	' 2020/08/26, BBS:	- First Release
+	' 2020/08/27, BBS:	- bug fixed when 'strValue' has only one level
 	'
 	'***********************************************************************************************
 
@@ -51,7 +52,7 @@ Function IBase_create_resParamValue(ByVal strValue)
 
 				If UBound(arrThis) < CInt(arrTagIdx(cnt2)) Then 		'Branch is needed now
 					cnt_level = UBound(arrTagIdx) - cnt2
-	
+
 					If cnt_level > 0 Then
 						flg_create = True
 					Else
@@ -76,12 +77,16 @@ Function IBase_create_resParamValue(ByVal strValue)
 			Erase arrBase
 			Redim Preserve arrBase(0)
 
-			For cnt2 = 0 to (CInt(arrTagIdx(UBound(arrTagIdx))) - 1)
-				Call hs_arr_append(arrBase, "")
-			Next
+			If CInt(arrTagIdx(UBound(arrTagIdx))) < 1 Then
+				arrThis = thisValue
+			Else
+				For cnt2 = 0 to (CInt(arrTagIdx(UBound(arrTagIdx))) - 1)
+					Call hs_arr_append(arrBase, "")
+				Next
 
-			Call hs_arr_append(arrBase, thisValue)
-			arrThis = arrBase
+				Call hs_arr_append(arrBase, thisValue)
+				arrThis = arrBase
+			End If
 		End If
 
 		' Compelete Result appending
@@ -117,6 +122,13 @@ Function IBase_create_resParamValue(ByVal strValue)
 				' Load Result array which are prepared in 'arrSnapObj' level 0 to 'arrRet'
 				For cnt2 = 0 to UBound(arrSnapObj(0))
 					arrRet(cnt2) = arrSnapObj(0)(cnt2)
+				Next
+			ElseIf UBound(arrTagIdx) = 0 Then
+				Erase arrRet
+				Redim Preserve arrRet(UBound(arrThis))
+				
+				For cnt2 = 0 to UBound(arrRet)
+					arrRet(cnt2) = arrThis(cnt2)
 				Next
 			Else
 				Call hs_arr_stack(arrThis, cnt_level - 1)
