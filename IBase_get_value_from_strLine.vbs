@@ -1,6 +1,7 @@
 Function IBase_get_value_from_strLine(ByVal strLine, ByVal chr_sep)
 	'*** History ***********************************************************************************
 	' 2020/08/23, BBS:	- First Release
+	' 2020/08/27, BBS: 	- Bug fixed, Case: Value only (e.g. strLine = ""MASS",")
 	'
 	'***********************************************************************************************
 	
@@ -17,6 +18,7 @@ Function IBase_get_value_from_strLine(ByVal strLine, ByVal chr_sep)
 	'						e.g. chr_sep = "=" for XML, chr_sep = ":" for JSON
 	'
 	'***********************************************************************************************
+	
 	On Error Resume Next
 	IBase_get_value_from_strLine = Array("", "")
 
@@ -70,8 +72,12 @@ Function IBase_get_value_from_strLine(ByVal strLine, ByVal chr_sep)
 		If cnt_pos > 0 Then
 			arrValue(0) = Mid(strLine, cnt_idx + 1, cnt_pos - cnt_idx - 1)
 			cnt_idx 	= InStr(cnt_pos, strLine, chr_sep) + 1
+			
+			If cnt_idx = 1 Then
+				arrValue(1) = arrValue(0)
+				arrValue(0) = ""
 
-			If InStr(cnt_idx, strLine, chr(34)) > 0 Then
+			ElseIf InStr(cnt_idx, strLine, chr(34)) > 0 Then
 				cnt_idx = InStr(cnt_idx, strLine, chr(34)) + 1
 				cnt_pos = InStr(cnt_idx, strLine, chr(34))
 				arrValue(1) = Mid(strLine, cnt_idx, cnt_pos - cnt_idx)
