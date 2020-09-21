@@ -4,6 +4,7 @@ Function IUser_translate_json_strContent(ByVal strContent)
 	' 2020/08/27, BBS:	- Bug fixed
 	' 					1) Array tag is not removed when it's only one tag left
 	'					2) Parameter path ends with "." for any value that has array value line
+	' 2020/09/21, BBS:	- Bug fixed, Array branching is not closed correctly
 	'
 	'***********************************************************************************************
 	
@@ -24,7 +25,7 @@ Function IUser_translate_json_strContent(ByVal strContent)
 	'*** Initialization ****************************************************************************
 	Dim cnt1, cnt_row, flg_append, tagBranch, tagLabel, tagLatest, thisParam, thisValue, existValue
 	Dim curRoot, curPath, strTagArray, strTagValue, strTagRemove, strParamEx, strBrnTag, strBrnIdx
-	Dim arrContent, arrThisInfo, arrBrnTag, arrBrnIdx, arrParam(), arrValue()
+	Dim flg_clr_rt, arrContent, arrThisInfo, arrRoot, arrBrn, arrParam(), arrValue()
 	Redim Preserve arrParam(0), arrValue(0)
 
 	arrContent  = Split(strContent, vbCrLf)
@@ -44,6 +45,7 @@ Function IUser_translate_json_strContent(ByVal strContent)
 		thisParam   = arrThisInfo(0)
 		thisValue	= CStr(arrThisInfo(1))
 		flg_append	= False
+		flg_clr_rt  = False
 
 		If thisParam <> "" Then 	' Case: Parameter does exist
 			' Case: Value doesn't exist but SubGroup's or Array's symbol
@@ -83,16 +85,18 @@ Function IUser_translate_json_strContent(ByVal strContent)
 		ElseIf thisParam = "" Then 	' Case: Parameter doesn't exist
 			' Case: End of current sub-tags group '{}', clear Root, and stored tags string
 			If InStr(arrContent(cnt_row), "}") > 0 and len(curRoot) > 0 Then
-				strTagRemove = Mid(curRoot, InStrRev(curRoot, ".") + 1, len(curRoot))
+				flg_clr_rt = True
 
-				If InStr(strTagArray, "%" & strTagRemove & "%") = 0 and _
-				 	InStr(strTagValue, "%" & strTagRemove & "%") > 0 Then
-				 	curRoot 	= Mid(curRoot, 1, InStrRev(curRoot, ".") - 1)
-				 	strTagValue = Mid(strTagValue, 1, InStrRev(strTagValue, ";") - 1)
-				End If
-			
 			' Case: End of latest branch, clear all memo info of latest branch
 			ElseIf InStr(arrContent(cnt_row), "]") > 0 Then
+				arrRoot 	 = Split(curRoot, ".")
+				arrBrn 		 = Split(strTagArray, ";")
+				strTagRemove = Replace(arrBrn(UBound(arrBrn)), "%", "")
+
+				If arrRoot(UBound(arrRoot)) = strTagRemove Then
+					flg_clr_rt = True
+				End If
+	
 				If InStrRev(strTagArray, ";") > 0 Then
 					strTagArray = Mid(strTagArray, 1, InStrRev(strTagArray, ";") - 1)
 				Else
@@ -110,6 +114,27 @@ Function IUser_translate_json_strContent(ByVal strContent)
 			' Case: Value line (e.g. Parameter that has array value will break its value into lines)
 			ElseIf InStr(arrContent(cnt_row), "{") = 0 and InStr(arrContent(cnt_row), "[") = 0 Then
 				flg_append  = True
+			End If
+		End If
+
+		' Root Removal
+		If flg_clr_rt Then
+			strTagRemove = Mid(curRoot, InStrRev(curRoot, ".") + 1, len(curRoot))
+
+			If InStr(strTagArray, "%" & strTagRemove & "%") = 0 and _
+			 	InStr(strTagValue, "%" & strTagRemove & "%") > 0 Then
+
+			 	If InStr(curRoot, ".") > 0 Then
+			 		curRoot = Mid(curRoot, 1, InStrRev(curRoot, ".") - 1)
+			 	Else
+			 		curRoot = ""
+			 	End If
+
+			 	If InStr(strTagValue, ";") > 0 Then
+			 		strTagValue = Mid(strTagValue, 1, InStrRev(strTagValue, ";") - 1)
+			 	Else
+			 		strTagValue = ""
+			 	End If
 			End If
 		End If
 
