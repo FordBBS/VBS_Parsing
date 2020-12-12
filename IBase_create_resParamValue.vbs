@@ -91,7 +91,7 @@ Function IBase_create_resParamValue(ByVal strValue)
 				arrPrep = Array()
 
 				For cnt2 = corr_lvl to (CInt(arrTagIdx(UBound(arrTagIdx))) - 1)
-					Call hs_arr_append(arrPrep, Empty)
+					Call hs_arr_append(arrPrep, "")
 				Next
 				
 				Call hs_arr_append(arrPrep, thisValue)
@@ -112,7 +112,7 @@ Function IBase_create_resParamValue(ByVal strValue)
 				arrTmp 	   = tarSnapObj(tarSnapIdx)
 
 				For cnt3 = UBound(arrTmp) to (CInt(arrSnapIdx(cnt2)) - 2)
-					Call hs_arr_append(arrTmp, Empty)
+					Call hs_arr_append(arrTmp, "")
 				Next
 				Call hs_arr_append(arrTmp, arrSnapObj(cnt2))
 
@@ -125,7 +125,7 @@ Function IBase_create_resParamValue(ByVal strValue)
 		' Method: Direct Appending
 		Else
 			For cnt2 = UBound(arrRet) to (CInt(arrTagIdx(0)) - 2)
-				Call hs_arr_append(arrRet, Empty)
+				Call hs_arr_append(arrRet, "")
 			Next
 			Call hs_arr_append(arrRet, arrPrep)
 		End If
