@@ -224,32 +224,10 @@ Function IUser_translate_json_strContent(ByVal strContent)
 	Next
 
 	'--- Result's Conditioning ---------------------------------------------------------------------
-	Dim arrCondParam, arrCondValue, flg_val
-	arrCondParam = Array()
-	arrCondValue = Array()
-
-	' Remove redundant param (e.g. ema_option shouldn't exist if ema_option.name exists)
-	For cnt1 = 0 to UBound(arrParam)
-		If cnt1 < UBound(arrParam) Then
-			If hs_arr_val_exist_ex(hs_arr_slice(arrParam, cnt1 + 1, -1), arrParam(cnt1), 1, False) < 0 Then
-				flg_val = True
-			Else
-				flg_val = False
-			End If
-		ElseIf hs_arr_val_exist_ex(hs_arr_slice(arrParam, -2, 0), arrParam(cnt1), 1, False) < 0 Then
-			flg_val = True
-		Else
-			flg_val = False
-		End If
-
-		If flg_val Then
-			Call hs_arr_append(arrCondParam, arrParam(cnt1))
-			Call hs_arr_append(arrCondValue, arrValue(cnt1))
-		End If
-	Next
-
+	Call hs_parser_remove_redundant_params(arrParam, arrValue)
+	
 	'--- Release -----------------------------------------------------------------------------------
-	IUser_translate_json_strContent = Array(arrCondParam, arrCondValue)
+	IUser_translate_json_strContent = Array(arrParam, arrValue)
 
 	'*** Error handler *****************************************************************************
 	If Err.Number <> 0 Then
